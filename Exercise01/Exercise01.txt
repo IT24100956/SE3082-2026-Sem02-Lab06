@@ -1,0 +1,3 @@
+Briefly describe how the pragma omp barrier command works in this program. 
+The barrier strict phase separation. No thread is allowed to print "Outside Barrier" 
+until every thread has finished printing its initial "thread #" line.

@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <omp.h>
+
+#define NPOINTS 2000
+#define MAXITER 2000
+
+struct d_complex {
+    double r;
+    double i;
+};
+
+void testpoint(struct d_complex c, int *numoutside) {
+    struct d_complex z = c;
+    for (int iter = 0; iter < MAXITER; iter++) {
+        double temp = (z.r * z.r) - (z.i * z.i) + c.r;
+        z.i = z.r * z.i * 2.0 + c.i;
+        z.r = temp;
+        if ((z.r * z.r + z.i * z.i) > 4.0) {
+            (*numoutside)++;
+            break;
+        }
+    }
+}
+
+int main() {
+    int numoutside;
+    double area, error;
+    double start_time, end_time;
+
+    for (int num_threads = 1; num_threads <= 4; num_threads++) {
+        numoutside = 0;
+        omp_set_num_threads(num_threads);
+
+        start_time = omp_get_wtime();
+
+        #pragma omp parallel default(none) shared(numoutside)
+        {
+            int myid = omp_get_thread_num();
+            int nthreads = omp_get_num_threads();
+
+            int i_start = myid * (NPOINTS / nthreads);
+            int i_end = (myid == nthreads - 1) ? NPOINTS : (myid + 1) * (NPOINTS / nthreads);
+
+            int local_outside = 0;
+            struct d_complex c;
+
+            for (int i = i_start; i < i_end; i++) {
+                for (int j = 0; j < NPOINTS; j++) {
+                    c.r = -2.0 + 2.5 * (double)i / (double)NPOINTS;
+                    c.i = 1.125 * (double)j / (double)NPOINTS;
+                    testpoint(c, &local_outside);
+                }
+            }
+
+            #pragma omp atomic
+            numoutside += local_outside;
+        }
+
+        end_time = omp_get_wtime();
+
+        area = 2.0 * 2.5 * 1.125 * (double)(NPOINTS * NPOINTS - numoutside) / (double)(NPOINTS * NPOINTS);
+        error = area / (double)NPOINTS;
+
+        printf("Threads: %d | Time: %.4fs | Area: %f +/- %f\n",
+               num_threads, end_time - start_time, area, error);
+    }
+
+    return 0;
+}

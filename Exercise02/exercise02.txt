@@ -1,1 +1,3 @@
-
+Briefly describe how the pragma omp single command works in this program. 
+#pragma omp single: Executed by the first available thread and has an implicit barrier 
+(other threads wait).

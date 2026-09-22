@@ -1,1 +1,10 @@
+briefly describe how the threads are generated for this code.
+#pragma omp parallel for spawns a team of threads
+By default, OpenMP only attaches to the immediately following loop (r = 1 to 5).
+The outer loop has 5 iterations (r = 1, 2, 3, 4, 5) distributed among 4 threads:
 
+
+
+When you replace the code below with #pragma omp parallel for collapse(2) how are the threads generated.
+
+With collapse(2)50 iterations13 runs

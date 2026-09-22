@@ -1,1 +1,4 @@
-
+Briefly describe how the pragma omp master command works in this program. 
+Only the master thread (Thread # 0) enters and executes the code inside #pragma omp 
+master. 
+Unlike #pragma omp single, the master directive does not make other threads wait.
